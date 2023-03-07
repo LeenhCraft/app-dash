@@ -1,3 +1,3 @@
 # LeenhCraft.com
 
-plataforma para biblioteca
+aplicacion web con panel, menus dinamicos, listo para desarrollar aplicaciones web
