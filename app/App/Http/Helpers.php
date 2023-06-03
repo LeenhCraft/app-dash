@@ -7,7 +7,7 @@ use App\Models\WebModel;
 function base_url()
 {
     // return BASE_URL;
-    return $_ENV['APP_URL'] . '/';
+    return trim($_ENV['APP_URL'], '/') . '/';
 }
 
 function media()

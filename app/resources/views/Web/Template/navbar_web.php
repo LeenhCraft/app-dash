@@ -16,28 +16,27 @@
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="menu_icon"><i class="fas fa-bars"></i></span>
                     </button>
-
                     <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                         <ul class="navbar-nav">
 
                             <?php foreach ($menus as $menu) :
-                                if ($menu['me_url'] != "") : ?>
+                                if ($menu['men_url'] != "") : ?>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="<?= $menu["me_url"] ?>"><?= $menu['me_name'] ?></a>
+                                        <a class="nav-link" href="<?= $menu["men_url"] ?>"><?= $menu['men_nombre'] ?></a>
                                     </li>
                                 <?php endif;
 
-                                if ($menu['me_url'] == null) : ?>
+                                if ($menu['men_url'] == null) : ?>
                                     <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="<?= str_replace(" ", "-", $menu['me_name']) ?>" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <?= $menu['me_name'] ?>
+                                        <a class="nav-link dropdown-toggle" href="#" id="<?= str_replace(" ", "-", $menu['men_nombre']) ?>" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <?= $menu['men_nombre'] ?>
                                         </a>
                                         <?php
                                         if (!empty($menu['submenus'])) :
                                         ?>
-                                            <div class="dropdown-menu" aria-labelledby="<?= str_replace(" ", "-", $menu['me_name']) ?>">
+                                            <div class="dropdown-menu" aria-labelledby="<?= str_replace("", "-", $menu['men_nombre']) ?>">
                                                 <?php foreach ($menu['submenus'] as $submenu) : ?>
-                                                    <a class="dropdown-item" href="<?= $submenu['me_url'] ?>"><?= $submenu['me_name'] ?></a>
+                                                    <a class="dropdown-item" href="<?= $submenu['sub_url'] ?>"><?= $submenu['sub_nombre'] ?></a>
                                                 <?php endforeach; ?>
                                             </div>
                                         <?php endif; ?>

@@ -10,6 +10,7 @@ class Model
     protected $db_user;
     protected $db_pass;
     protected $db_name;
+    protected $db_charset = "utf8mb4";
     protected $connection;
     protected $query;
     protected $table;
@@ -17,7 +18,7 @@ class Model
 
     protected $sql, $data = [], $params = null;
 
-    protected $orderBy = "", $limit = "";
+    protected $join = "", $orderBy = "", $limit = "";
 
     public function __construct()
     {
@@ -25,6 +26,7 @@ class Model
         $this->db_user = $_ENV['DB_USERNAME'];
         $this->db_pass = $_ENV['DB_PASSWORD'];
         $this->db_name = $_ENV['DB_DATABASE'];
+        $this->db_charset = $_ENV['DB_CHARSET'];
         $this->connection();
     }
 
@@ -34,6 +36,7 @@ class Model
         if ($this->connection->connect_error) {
             die("Connection failed: " . $this->connection->connect_error);
         }
+        $this->connection->set_charset($this->db_charset);
     }
 
     public function query($sql, $data = [], $params = null)
@@ -49,6 +52,19 @@ class Model
         } else {
             $this->query = $this->connection->query($sql);
         }
+        return $this;
+    }
+
+    // funcion para vaciar querys
+    public function emptyQuery()
+    {
+        $this->query = null;
+        $this->sql = null;
+        $this->data = [];
+        $this->params = null;
+        $this->join = "";
+        $this->orderBy = "";
+        $this->limit = "";
         return $this;
     }
 
@@ -92,6 +108,8 @@ class Model
                 $this->sql = "SELECT * FROM {$this->table}";
             }
 
+            $this->sql .= $this->join;
+
             $this->sql .= $this->orderBy;
 
             $this->sql .= $this->limit;
@@ -134,6 +152,45 @@ class Model
         ];
     }
 
+    public function paginate_int($cant = 15, $pg = 1, $srt = "", $ordr = "")
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+        $uri = trim($uri, '/');
+        if (strpos($uri, '?')) {
+            $uri = substr($uri, 0, strpos($uri, '?'));
+        }
+        // $cant = isset($_GET['limit']) && is_numeric($_GET['limit']) ? $_GET['limit'] : $cant;
+        $page = $pg != 1 && is_numeric($pg) ? $pg : 1;
+        $sort = $srt != "" ? "ORDER BY " . strClean($srt) : $this->orderBy;
+        $order = $ordr != "" ? strClean($ordr) : "";
+        $start = ($page - 1) * $cant;
+
+        if ($this->sql) {
+            $sql = $this->sql . ' ' . $sort . ' ' . $order . " LIMIT {$start}, {$cant}";
+            $data = $this->query($sql, $this->data, $this->params)->get();
+        } else {
+            $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} " . $sort . ' ' . $order . " LIMIT {$start}, {$cant}";
+            $data = $this->query($sql)->get();
+        }
+
+        $total = $this->query("SELECT FOUND_ROWS() as total")->first()['total'];
+        $last_page = ceil($total / $cant);
+        $next_page_url = $page < $last_page ?  "/{$uri}?page=" . ($page + 1) . "&limit=" . $cant : null;
+        $prev_page_url = $page > 1 ? "/{$uri}?page=" . ($page - 1) . "&limit=" . $cant  : null;
+        return [
+            'total' => $total,
+            'from' => $start + 1, //desde que registro se muestra
+            'to' => $start + count($data), // hasta que registro se muestra
+            'current_page' => $page, //pagina actual
+            'per_page' => $cant, //cantidad de registros por pagina
+            'next_page_url' => $next_page_url, //pagina siguiente
+            'prev_page_url' => $prev_page_url, //pagina anterior
+            'last_page' => $last_page, //ultimo numero de pagina
+            'data' => $data,
+        ];
+    }
+
+
     //consulttas preparadas
     public function all()
     {
@@ -165,6 +222,24 @@ class Model
 
 
         // $this->query($sql, [$value]);
+        return $this;
+    }
+
+    public function orWhere($column, $operator = "=", $value = null)
+    {
+        if ($value == null) {
+            $value = $operator;
+            $operator = "=";
+        }
+
+        if (empty($this->sql)) {
+            $this->sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} WHERE {$column} {$operator} ?";
+
+            $this->data[] = $value;
+        } else {
+            $this->sql .= " OR {$column} {$operator} ?";
+            $this->data[] = $value;
+        }
         return $this;
     }
 
@@ -200,5 +275,34 @@ class Model
         $sql = "DELETE FROM {$this->table} WHERE {$this->id} = ?";
         $this->query($sql, [$id], 'i');
         return $this->connection->affected_rows;
+    }
+
+    // funcion para ejecutar multiples consultas en una sola linea con mysqli_multi_query
+    public function multiQuery($sql)
+    {
+        return $this->connection->multi_query($sql);
+    }
+
+    // funcion inner join
+    public function join($table, $first, $operator = "=", $second = null)
+    {
+        if ($second === null) {
+            $second = $first;
+        }
+
+        $this->join .= " INNER JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+        return $this;
+    }
+
+
+    // fuccion left join
+    public function leftJoin($table, $first, $operator = "=", $second = null)
+    {
+        if ($second === null) {
+            $second = $first;
+        }
+
+        $this->join .= " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+        return $this;
     }
 }

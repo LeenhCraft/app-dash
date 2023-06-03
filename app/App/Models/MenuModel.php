@@ -12,9 +12,9 @@ class MenuModel extends Model
 
     public function menus()
     {
-        $menu = $this->where('me_publico', 1)->where("me_status", 1)->get();
+        $menu = $this->where('men_visible', 1)->where("men_status", 1)->get();
         foreach ($menu as $key => $value) {
-            $menu[$key]['submenus'] = $this->query("SELECT * FROM web_submenus WHERE idmenu = {$value['idmenu']} AND me_publico = 1 AND me_status = 1")->get();
+            $menu[$key]['submenus'] = $this->query("SELECT * FROM web_submenus WHERE idmenu = {$value['idmenu']} AND sub_visible = 1 AND sub_status = 1")->get();
         }
         return $menu;
     }
