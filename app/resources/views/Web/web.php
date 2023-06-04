@@ -19,7 +19,7 @@
                                 </div>
                             </div>
                             <div class="banner_img d-none d-lg-block" style="max-width: 300px; right: 15%;">
-                                <img src="https://web.cosmobook.pe/app/img/20220103_48iV.jpg" alt="Cargando...">
+                                <img src="/img/dash.png" alt="Cargando...">
                             </div>
                         </div>
                     </div>

@@ -16,7 +16,8 @@ class LoginAdminController extends Controller
 
     public function __construct()
     {
-        session_start();
+        // session_start();
+        parent::__construct();
         $this->responseFactory = new ResponseFactory();
         $this->guard = new Guard($this->responseFactory);
     }
@@ -37,7 +38,7 @@ class LoginAdminController extends Controller
     public function sessionUser($request, $response, $args)
     {
         $data = $this->sanitize($request->getParsedBody());
-        return $this->respondWithJson($response, [$data,$_SESSION]);
+        // return $this->respondWithJson($response, $data);
 
         $validate = $this->guard->validateToken($data['csrf_name'], $data['csrf_value']);
         if (!$validate) {
