@@ -14,17 +14,17 @@ use App\Middleware\AdminMiddleware;
 
 // Middlewares
 use App\Middleware\LoginAdminMiddleware;
+use App\Middleware\RemoveCsrfMiddleware;
 
-
-$app->get('/admin/login', LoginAdminController::class . ':index')->add(new AdminMiddleware);
+$app->get('/admin/login', LoginAdminController::class . ':index')->add(new AdminMiddleware)->add(new RemoveCsrfMiddleware());
 $app->post('/admin/login', LoginAdminController::class . ':sessionUser');
 
 $app->group('/admin', function (RouteCollectorProxy $group) {
-    $group->get("", DashboardController::class . ':index');
-    $group->get("/logout", LogoutController::class . ':admin');
+    $group->get("", DashboardController::class . ':index')->add(new RemoveCsrfMiddleware());
+    $group->get("/logout", LogoutController::class . ':admin')->add(new RemoveCsrfMiddleware());
 
     $group->group('/menus', function (RouteCollectorProxy $group) {
-        $group->get('', MenusController::class . ':index');
+        $group->get('', MenusController::class . ':index')->add(new RemoveCsrfMiddleware());
         $group->post('', MenusController::class . ':list');
         $group->post('/save', MenusController::class . ':store');
         $group->post('/update', MenusController::class . ':update');
@@ -34,7 +34,7 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
 
 
     $group->group('/submenus', function (RouteCollectorProxy $group) {
-        $group->get('', SubmenusController::class . ':index');
+        $group->get('', SubmenusController::class . ':index')->add(new RemoveCsrfMiddleware());
         $group->post('', SubmenusController::class . ':list');
         $group->post('/save', SubmenusController::class . ':store');
         $group->post('/update', SubmenusController::class . ':update');
@@ -43,7 +43,7 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->post('/delete', SubmenusController::class . ':delete');
     });
     $group->group('/permisos', function (RouteCollectorProxy $group) {
-        $group->get('', PermisosController::class . ':index');
+        $group->get('', PermisosController::class . ':index')->add(new RemoveCsrfMiddleware());
         $group->post('', PermisosController::class . ':list');
         $group->post('/save', PermisosController::class . ':store');
         $group->post('/delete', PermisosController::class . ':delete');

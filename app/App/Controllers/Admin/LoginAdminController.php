@@ -37,6 +37,7 @@ class LoginAdminController extends Controller
     public function sessionUser($request, $response, $args)
     {
         $data = $this->sanitize($request->getParsedBody());
+        return $this->respondWithJson($response, [$data,$_SESSION]);
 
         $validate = $this->guard->validateToken($data['csrf_name'], $data['csrf_value']);
         if (!$validate) {
