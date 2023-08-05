@@ -10,7 +10,8 @@ class ErrorController extends Controller
     public function notFound($resquest, $exception, $displayErrorDetails)
     {
         $response = new Response();
-        $response->getBody()->write("404 :p");
-        return $response->withStatus(404);
+        // $response->getBody()->write("404 :p");
+        // return $response->withStatus(404);
+        return $this->render($response, '404.404');
     }
 }
