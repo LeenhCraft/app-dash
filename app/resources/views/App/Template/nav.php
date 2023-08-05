@@ -50,9 +50,10 @@ $expand = $active = '';
                             foreach ($submenus as $key) :
                                 $active = ($key['sub_url'] == $ctrl) ? 'active' : '';
                                 $suburl = ($key['sub_url'] != '#') ? $key['sub_url'] : '#';
+                                $target = ($key['sub_externo'] == 1) ? 'target="_blank"' : '';
                             ?>
                                 <li class="menu-item <?php echo $active; ?>">
-                                    <a href="<?php echo $suburl; ?>" class="menu-link">
+                                    <a href="<?php echo $suburl; ?>" <?= $target ?> class="menu-link">
                                         <div data-i18n="<?php echo $key['sub_nombre']; ?>">
                                             <i class="menu-icon tf-icons bx <?php echo $key['sub_icono']; ?>"></i>
                                             <?php echo $key['sub_nombre']; ?>

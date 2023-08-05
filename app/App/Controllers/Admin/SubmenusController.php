@@ -112,6 +112,7 @@ class SubmenusController extends Controller
             "idmenu" => $data["idmenu"],
             "sub_nombre" => $data["name"],
             "sub_url" => $data['url'],
+            "sub_externo" => $data['sub_externo'] == "on" ? 1 : 0,
             "sub_controlador" => $data['controller'],
             "sub_icono" => $data['icon'] ?: "bx-circle",
             "sub_orden" => $data['order'] ?: 1,

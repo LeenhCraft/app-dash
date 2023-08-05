@@ -45,6 +45,7 @@ function fntView(id) {
 
 function fntEdit(id) {
   lstMenus();
+  resetForm();
   let ajaxUrl = base_url + "admin/submenus/search";
   $(".modal-form").html("Actualizar submenus");
   $(".modal-header").removeClass("headerRegister");
@@ -65,6 +66,10 @@ function fntEdit(id) {
       $("#idsubmenu").val(data.data.idsubmenu);
       $("#name").val(data.data.sub_nombre);
       $("#url").val(data.data.sub_url);
+      // maracar el checkbox
+      if (data.data.sub_externo == 1) {
+        $("#sub_externo").prop("checked", true);
+      }
       $("#controller").val(data.data.sub_controlador);
       $("#icon").val(data.data.sub_icono);
       $("#order").val(data.data.sub_orden);
@@ -119,17 +124,7 @@ function fntDel(idp) {
 
 function openModal() {
   lstMenus();
-  $(".modal-header").removeClass("headerUpdate");
-  $(".modal-header").addClass("headerRegister");
-  $("#btnActionForm").removeClass("btn-info");
-  $("#btnActionForm").addClass("btn-primary");
-  $("#btnText").html("Guardar");
-  $(".modal-form").html("Nuevo submenus");
-  $(".div_id").addClass("d-none");
-  $("#id").val("");
-  // $("#update_from").attr("id", "submenus_form");
-  $("#submenus_form").attr("onsubmit", "return save(this,event)");
-  $("#submenus_form").trigger("reset");
+  resetForm();
   $("#modalsubmenus").modal("show");
 }
 
@@ -219,4 +214,18 @@ function save(ths, e) {
     divLoading.css("display", "none");
   });
   return false;
+}
+
+function resetForm() {
+  $(".modal-header").removeClass("headerUpdate");
+  $(".modal-header").addClass("headerRegister");
+  $("#btnActionForm").removeClass("btn-info");
+  $("#btnActionForm").addClass("btn-primary");
+  $("#btnText").html("Guardar");
+  $(".modal-form").html("Nuevo submenus");
+  $(".div_id").addClass("d-none");
+  $("#id").val("");
+  // $("#update_from").attr("id", "submenus_form");
+  $("#submenus_form").attr("onsubmit", "return save(this,event)");
+  $("#submenus_form").trigger("reset");
 }

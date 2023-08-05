@@ -43,7 +43,7 @@ class MenuModel extends Model
     public function app_submenus(int $idmenu)
     {
         $idrol = $_SESSION['app_r'] ?? '0';
-        $sql = "SELECT b.idsubmenu,b.idmenu,b.sub_nombre,b.sub_icono,b.sub_url FROM sis_permisos a
+        $sql = "SELECT b.idsubmenu,b.idmenu,b.sub_nombre,b.sub_icono,b.sub_url,b.sub_externo FROM sis_permisos a
         INNER JOIN sis_submenus b ON a.idsubmenu=b.idsubmenu 
         WHERE b.idmenu = '$idmenu' AND b.sub_visible = 1 AND a.perm_r = 1 AND a.idrol = '$idrol' ORDER BY b.sub_orden ASC";
         $request = $this->query($sql)->get();
@@ -55,7 +55,8 @@ class MenuModel extends Model
                 'idsubmenu' => $request[$i]['idsubmenu'],
                 'sub_nombre' => (!empty($request[$i]['sub_nombre']) ? ucfirst($request[$i]['sub_nombre']) : ucfirst('sin nombre')),
                 'sub_icono' => (!empty($request[$i]['sub_icono']) ? $request[$i]['sub_icono'] : 'fa-solid fa-circle-notch'),
-                'sub_url' => (!empty($request[$i]['sub_url']) ? $request[$i]['sub_url'] : '#')
+                'sub_url' => (!empty($request[$i]['sub_url']) ? $request[$i]['sub_url'] : '#'),
+                'sub_externo' => (!empty($request[$i]['sub_externo']) ? $request[$i]['sub_externo'] : '#')
             ];
         }
         return $return;

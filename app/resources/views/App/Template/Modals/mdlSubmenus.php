@@ -37,11 +37,22 @@
                         <label for="url">Url</label>
                         <input type="text" class="form-control" id="url" name="url">
                     </div>
-                    <div class="form-group col-md-6 col-12">
+                    <div class="col-12 col-md-6">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="sub_externo" name="sub_externo">
+                            <label class="form-check-label" for="sub_externo">
+                                Enlace externo
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="form-group col-12">
                         <label for="controller">Controlador</label>
                         <input type="text" class="form-control" id="controller" name="controller">
                     </div>
                 </div>
+
                 <div class="row mb-3">
                     <div class="form-group col-md-6 col-12">
                         <label for="order">Orden</label>
