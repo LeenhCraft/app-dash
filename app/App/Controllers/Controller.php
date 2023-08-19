@@ -70,6 +70,10 @@ class Controller
     public function sanitize($data)
     {
         foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->sanitize($value);
+                continue;
+            }
             $data[$key] = strClean($value);
         }
         return $data;
