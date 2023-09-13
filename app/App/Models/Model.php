@@ -17,6 +17,8 @@ class Model
     protected $id = "id";
 
     protected $sql, $data = [], $params = null;
+    protected $select = "*";
+    protected $where, $values = [];
 
     protected $join = "", $orderBy = "", $limit = "";
 
@@ -55,33 +57,88 @@ class Model
         return $this;
     }
 
-    // funcion para vaciar querys
-    public function emptyQuery()
+    public function select(...$columns)
     {
-        $this->query = null;
-        $this->sql = null;
-        $this->data = [];
-        $this->params = null;
-        $this->join = "";
-        $this->orderBy = "";
-        $this->limit = "";
+        $this->select = implode(', ', $columns);
+
         return $this;
     }
 
-    public function orderBy($column, $order = "ASC")
+    public function join($table, $first, $operator = "=", $second = null)
     {
-        if (empty($this->orderBy)) {
-            $this->orderBy = " ORDER BY {$column} {$order}";
+        if ($second === null) {
+            $second = $operator;
+            $operator = "=";
+        }
+
+        if ($this->join) {
+            $this->join .= " INNER JOIN {$table} ON {$first} {$operator} {$second}";
         } else {
-            $this->orderBy .= ", {$column} {$order}";
+            $this->join = " INNER JOIN {$table} ON {$first} {$operator} {$second}";
         }
 
         return $this;
     }
 
-    public function limit($limit)
+    public function leftJoin($table, $first, $operator = "=", $second = null)
     {
-        $this->limit = " LIMIT {$limit}";
+        if ($second === null) {
+            $second = $operator;
+            $operator = "=";
+        }
+
+        if ($this->join) {
+            $this->join .= " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+        } else {
+            $this->join = " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+        }
+
+        return $this;
+    }
+
+    public function where($column, $operator = "=", $value = null)
+    {
+        if ($value == null) {
+            $value = $operator;
+            $operator = "=";
+        }
+
+        if ($this->where) {
+            $this->where .= " AND {$column} {$operator} ?";
+        } else {
+            $this->where = "{$column} {$operator} ?";
+        }
+
+        $this->values[] = $value;
+
+        return $this;
+    }
+
+    public function orWhere($column, $operator = "=", $value = null)
+    {
+        if ($value == null) {
+            $value = $operator;
+            $operator = "=";
+        }
+
+        if ($this->where) {
+            $this->where .= " OR {$column} {$operator} ?";
+        } else {
+            $this->where = "{$column} {$operator} ?";
+        }
+
+        $this->values[] = $value;
+        return $this;
+    }
+
+    public function orderBy($column, $order = "ASC")
+    {
+        if ($this->orderBy) {
+            $this->orderBy = ", {$column} {$order}";
+        } else {
+            $this->orderBy = "{$column} {$order}";
+        }
+
         return $this;
     }
 
@@ -89,13 +146,25 @@ class Model
     {
         if (empty($this->query)) {
 
-            if (empty($this->sql)) {
-                $this->sql = "SELECT * FROM {$this->table}";
+            // if (empty($this->sql)) {
+            //     $this->sql = "SELECT * FROM {$this->table}";
+            // }
+
+            // $this->sql .= $this->orderBy;
+
+            // $this->query($this->sql, $this->data, $this->params);
+
+            $sql = "SELECT {$this->select} FROM {$this->table}";
+
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
             }
 
-            $this->sql .= $this->orderBy;
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
 
-            $this->query($this->sql, $this->data, $this->params);
+            $this->query($sql, $this->values, $this->params);
         }
         return $this->query->fetch_assoc();
     }
@@ -104,18 +173,30 @@ class Model
     {
         if (empty($this->query)) {
 
-            if (empty($this->sql)) {
-                $this->sql = "SELECT * FROM {$this->table}";
+            // if (empty($this->sql)) {
+            //     $this->sql = "SELECT * FROM {$this->table}";
+            // }
+
+            // $this->sql .= $this->join;
+
+            // $this->sql .= $this->orderBy;
+
+            // $this->sql .= $this->limit;
+
+            // $this->query($this->sql, $this->data, $this->params);
+
+            $sql = "SELECT {$this->select} FROM {$this->table}";
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
             }
 
-            $this->sql .= $this->join;
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
 
-            $this->sql .= $this->orderBy;
-
-            $this->sql .= $this->limit;
-
-            $this->query($this->sql, $this->data, $this->params);
+            $this->query($sql, $this->values, $this->params);
         }
+
         return $this->query->fetch_all(MYSQLI_ASSOC);
     }
 
@@ -129,13 +210,31 @@ class Model
         $page = isset($_GET['page']) ? $_GET['page'] : 1;
         $start = ($page - 1) * $cant;
 
-        if ($this->sql) {
-            $sql = $this->sql . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
-            $data = $this->query($sql, $this->data, $this->params)->get();
-        } else {
-            $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} " . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
-            $data = $this->query($sql)->get();
+        // if ($this->sql) {
+        //     $sql = $this->sql . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
+        //     $data = $this->query($sql, $this->data, $this->params)->get();
+        // } else {
+        //     $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} " . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
+        //     $data = $this->query($sql)->get();
+        // }
+
+        if (empty($this->query)) {
+
+            $sql = "SELECT SQL_CALC_FOUND_ROWS {$this->select} FROM {$this->table}";
+
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
+            }
+
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
+
+            $sql .= " LIMIT {$start}, {$cant}";
+
+            $data = $this->query($sql, $this->values, $this->params)->get();
         }
+
 
         $total = $this->query("SELECT FOUND_ROWS() as total")->first()['total'];
         $last_page = ceil($total / $cant);
@@ -150,6 +249,25 @@ class Model
             'last_page' => $last_page, //ultimo numero de pagina
             'data' => $data,
         ];
+    }
+
+    // funcion para vaciar querys
+    public function emptyQuery()
+    {
+        $this->query = null;
+        $this->sql = null;
+        $this->data = [];
+        $this->params = null;
+        $this->join = "";
+        $this->orderBy = "";
+        $this->limit = "";
+        return $this;
+    }
+
+    public function limit($limit)
+    {
+        $this->limit = " LIMIT {$limit}";
+        return $this;
     }
 
     public function paginate_int($cant = 15, $pg = 1, $srt = "", $ordr = "")
@@ -190,7 +308,6 @@ class Model
         ];
     }
 
-
     //consulttas preparadas
     public function all()
     {
@@ -202,45 +319,6 @@ class Model
     {
         $sql = "SELECT * FROM {$this->table} WHERE {$this->id} = ?";
         return $this->query($sql, [$id], "i")->first();
-    }
-
-    public function where($column, $operator = "=", $value = null)
-    {
-        if ($value == null) {
-            $value = $operator;
-            $operator = "=";
-        }
-
-        if (empty($this->sql)) {
-            $this->sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} WHERE {$column} {$operator} ?";
-
-            $this->data[] = $value;
-        } else {
-            $this->sql .= " AND {$column} {$operator} ?";
-            $this->data[] = $value;
-        }
-
-
-        // $this->query($sql, [$value]);
-        return $this;
-    }
-
-    public function orWhere($column, $operator = "=", $value = null)
-    {
-        if ($value == null) {
-            $value = $operator;
-            $operator = "=";
-        }
-
-        if (empty($this->sql)) {
-            $this->sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} WHERE {$column} {$operator} ?";
-
-            $this->data[] = $value;
-        } else {
-            $this->sql .= " OR {$column} {$operator} ?";
-            $this->data[] = $value;
-        }
-        return $this;
     }
 
     public function create($data)
@@ -281,28 +359,5 @@ class Model
     public function multiQuery($sql)
     {
         return $this->connection->multi_query($sql);
-    }
-
-    // funcion inner join
-    public function join($table, $first, $operator = "=", $second = null)
-    {
-        if ($second === null) {
-            $second = $first;
-        }
-
-        $this->join .= " INNER JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
-        return $this;
-    }
-
-
-    // fuccion left join
-    public function leftJoin($table, $first, $operator = "=", $second = null)
-    {
-        if ($second === null) {
-            $second = $first;
-        }
-
-        $this->join .= " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
-        return $this;
     }
 }
