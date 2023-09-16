@@ -43,6 +43,7 @@ class Model
 
     public function query($sql, $data = [], $params = null)
     {
+        $this->sql = $sql;
         if ($data) { //si data es diferente de null
             if ($params == null) {
                 $params = str_repeat("s", count($data));
@@ -88,9 +89,9 @@ class Model
         }
 
         if ($this->join) {
-            $this->join .= " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+            $this->join .= " LEFT JOIN {$table} ON {$first} {$operator} {$second}";
         } else {
-            $this->join = " LEFT JOIN {$table} ON {$table}.{$first} {$operator} {$this->table}.{$second}";
+            $this->join = " LEFT JOIN {$table} ON {$first} {$operator} {$second}";
         }
 
         return $this;
@@ -134,121 +135,12 @@ class Model
     public function orderBy($column, $order = "ASC")
     {
         if ($this->orderBy) {
-            $this->orderBy = ", {$column} {$order}";
+            $this->orderBy .= ", {$column} {$order}";
         } else {
             $this->orderBy = "{$column} {$order}";
         }
 
         return $this;
-    }
-
-    public function first()
-    {
-        if (empty($this->query)) {
-
-            // if (empty($this->sql)) {
-            //     $this->sql = "SELECT * FROM {$this->table}";
-            // }
-
-            // $this->sql .= $this->orderBy;
-
-            // $this->query($this->sql, $this->data, $this->params);
-
-            $sql = "SELECT {$this->select} FROM {$this->table}";
-
-            if ($this->where) {
-                $sql .= " WHERE {$this->where}";
-            }
-
-            if ($this->orderBy) {
-                $sql .= " ORDER BY {$this->orderBy}";
-            }
-
-            $this->query($sql, $this->values, $this->params);
-        }
-        return $this->query->fetch_assoc();
-    }
-
-    public function get()
-    {
-        if (empty($this->query)) {
-
-            // if (empty($this->sql)) {
-            //     $this->sql = "SELECT * FROM {$this->table}";
-            // }
-
-            // $this->sql .= $this->join;
-
-            // $this->sql .= $this->orderBy;
-
-            // $this->sql .= $this->limit;
-
-            // $this->query($this->sql, $this->data, $this->params);
-
-            $sql = "SELECT {$this->select} FROM {$this->table}";
-            if ($this->where) {
-                $sql .= " WHERE {$this->where}";
-            }
-
-            if ($this->orderBy) {
-                $sql .= " ORDER BY {$this->orderBy}";
-            }
-
-            $this->query($sql, $this->values, $this->params);
-        }
-
-        return $this->query->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function paginate($cant = 15)
-    {
-        $uri = $_SERVER['REQUEST_URI'];
-        $uri = trim($uri, '/');
-        if (strpos($uri, '?')) {
-            $uri = substr($uri, 0, strpos($uri, '?'));
-        }
-        $page = isset($_GET['page']) ? $_GET['page'] : 1;
-        $start = ($page - 1) * $cant;
-
-        // if ($this->sql) {
-        //     $sql = $this->sql . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
-        //     $data = $this->query($sql, $this->data, $this->params)->get();
-        // } else {
-        //     $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} " . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
-        //     $data = $this->query($sql)->get();
-        // }
-
-        if (empty($this->query)) {
-
-            $sql = "SELECT SQL_CALC_FOUND_ROWS {$this->select} FROM {$this->table}";
-
-            if ($this->where) {
-                $sql .= " WHERE {$this->where}";
-            }
-
-            if ($this->orderBy) {
-                $sql .= " ORDER BY {$this->orderBy}";
-            }
-
-            $sql .= " LIMIT {$start}, {$cant}";
-
-            $data = $this->query($sql, $this->values, $this->params)->get();
-        }
-
-
-        $total = $this->query("SELECT FOUND_ROWS() as total")->first()['total'];
-        $last_page = ceil($total / $cant);
-        return [
-            'total' => $total,
-            'from' => $start + 1, //desde que registro se muestra
-            'to' => $start + count($data), // hasta que registro se muestra
-            'current_page' => $page, //pagina actual
-            'per_page' => $cant, //cantidad de registros por pagina
-            'next_page_url' => $page < $last_page ?  "/{$uri}?page=" . ($page + 1) : null, //pagina siguiente
-            'prev_page_url' => $page > 1 ? "/{$uri}?page=" . ($page - 1) : null, //pagina anterior
-            'last_page' => $last_page, //ultimo numero de pagina
-            'data' => $data,
-        ];
     }
 
     // funcion para vaciar querys
@@ -268,6 +160,136 @@ class Model
     {
         $this->limit = " LIMIT {$limit}";
         return $this;
+    }
+
+    public function first()
+    {
+        if (empty($this->query)) {
+
+            // if (empty($this->sql)) {
+            //     $this->sql = "SELECT * FROM {$this->table}";
+            // }
+
+            // $this->sql .= $this->orderBy;
+
+            // $this->query($this->sql, $this->data, $this->params);
+
+            $sql = "SELECT {$this->select} FROM {$this->table}";
+
+            if ($this->join) {
+                $sql .= $this->join;
+            }
+
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
+            }
+
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
+
+            if ($this->limit) {
+                $sql .= $this->limit;
+            }
+
+            $this->query($sql, $this->values, $this->params);
+        }
+        return $this->query->fetch_assoc();
+    }
+
+    public function get()
+    {
+        if (empty($this->query)) {
+
+            /* if (empty($this->sql)) {
+                $this->sql = "SELECT * FROM {$this->table}";
+            }
+
+            $this->sql .= $this->join;
+
+            $this->sql .= $this->orderBy;
+
+            $this->sql .= $this->limit;
+
+            $this->query($this->sql, $this->data, $this->params); */
+
+            $sql = "SELECT {$this->select} FROM {$this->table}";
+
+            if ($this->join) {
+                $sql .= $this->join;
+            }
+
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
+            }
+
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
+
+            if ($this->limit) {
+                $sql .= $this->limit;
+            }
+
+            $this->query($sql, $this->values, $this->params);
+        }
+        return $this->query->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function paginate($cant = 15)
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+        $uri = trim($uri, '/');
+        if (strpos($uri, '?')) {
+            $uri = substr($uri, 0, strpos($uri, '?'));
+        }
+        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+        $start = ($page - 1) * $cant;
+
+        /* if ($this->sql) {
+            $sql = $this->sql . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
+            $data = $this->query($sql, $this->data, $this->params)->get();
+        } else {
+            $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM {$this->table} " . ($this->orderBy ?? '') . " LIMIT {$start}, {$cant}";
+            $data = $this->query($sql)->get();
+        } */
+
+        if (empty($this->query)) {
+
+            $sql = "SELECT SQL_CALC_FOUND_ROWS {$this->select} FROM {$this->table}";
+
+            if ($this->join) {
+                $sql .= $this->join;
+            }
+
+            if ($this->where) {
+                $sql .= " WHERE {$this->where}";
+            }
+
+            if ($this->orderBy) {
+                $sql .= " ORDER BY {$this->orderBy}";
+            }
+
+            if ($this->limit) {
+                $sql .= $this->limit;
+            }
+
+            $data = $this->query($sql, $this->values, $this->params)->get();
+        }
+
+        $total = $this->query("SELECT FOUND_ROWS() as total")->first()['total'];
+        $last_page = ceil($total / $cant);
+        return [
+            'total' => $total,
+            'from' => $start + 1, //desde que registro se muestra
+            'to' => $start + count($data), // hasta que registro se muestra
+            'current_page' => $page, //pagina actual
+            'per_page' => $cant, //cantidad de registros por pagina
+            'next_page_url' => $page < $last_page ?  "/{$uri}?page=" . ($page + 1) : null, //pagina siguiente
+            'prev_page_url' => $page > 1 ? "/{$uri}?page=" . ($page - 1) : null, //pagina anterior
+            'last_page' => $last_page, //ultimo numero de pagina
+            'data' => $data,
+        ];
     }
 
     public function paginate_int($cant = 15, $pg = 1, $srt = "", $ordr = "")
@@ -307,6 +329,7 @@ class Model
             'data' => $data,
         ];
     }
+
 
     //consulttas preparadas
     public function all()
