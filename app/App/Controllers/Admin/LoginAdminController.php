@@ -6,7 +6,7 @@ use Slim\Csrf\Guard;
 use Slim\Psr7\Factory\ResponseFactory;
 
 use App\Controllers\Controller;
-use App\Models\Admin\LoginAdminmodel;
+use App\Models\Admin\LoginAdminModel;
 
 class LoginAdminController extends Controller
 {
@@ -52,7 +52,7 @@ class LoginAdminController extends Controller
             return $this->respondWithError($response, $msg);
         }
 
-        $loginModel = new LoginAdminmodel;
+        $loginModel = new LoginAdminModel;
         $userData = $loginModel->getUser('usu_usuario', $data['email']);
 
         if (empty($userData)) {

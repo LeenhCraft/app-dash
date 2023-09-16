@@ -1,44 +1,47 @@
 <div class="modal fade" id="modalpermisos" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header headerRegister">
-                <h5 class="modal-title" id="titleModal">Nuevo permisos</h5>
-            </div>
-            <div class="modal-body">
-                <form id="permisos_form" name="permisos_form" class="form-horizontal">
+        <form id="permisos_form" name="permisos_form" class="form-horizontal">
+            <div class="modal-content">
+                <div class="modal-header headerRegister">
+                    <h5 class="modal-title" id="titleModal">Nuevo permisos</h5>
+                </div>
+                <div class="modal-body">
                     <input type="hidden" name="<?= $data['tk']['name'] ?>" value="<?= $data['tk']['key'][$data['tk']['name']]  ?>">
                     <input type="hidden" name="<?= $data['tk']['value'] ?>" value="<?= $data['tk']['key'][$data['tk']['value']] ?>">
                     <input type="hidden" id="idpermiso" name="idpermiso" value="">
-                    <div class="form-row">
-                        <div class="form-group col-md-12">
+                    <div class="row">
+                        <div class="form-group col-12 mb-3">
                             <label for="idrol">Roles</label>
                             <select name="idrol" id="idrol" class="form-control text-capitalize">
                                 <option value="">Seleccione</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-12">
+                        <div class="form-group col-12 mb-3">
+                            <label for="idmenu">Menus</label>
+                            <select name="idmenu" id="idmenu" class="form-control text-capitalize">
+                                <option value="">Seleccione</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12 mb-3">
                             <label for="idsubmenu">Submenus</label>
                             <select name="idsubmenu" id="idsubmenu" class="form-control text-capitalize">
                                 <option value="">Seleccione</option>
                             </select>
                         </div>
                     </div>
-                    <div class="tile-footer mt-4">
-                        <button class="btn btn-primary ft-b" id="btnActionForm" type="submit">
-                            <i class="fa fa-fw fa-lg fa-check-circle ft-b"></i>
-                            <span id="btnText">Guardar</span>
-                        </button>
-                        <button class="btn btn-danger ft-b text-capitalize ml-2" type="button" data-bs-dismiss="modal">
-                            <i class="fa fa-lg fa-times-circle ft-b"></i>
-                            <span class="text-capitalize">cerrar</span>
-                        </button>
-                    </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary ft-b" id="btnActionForm" type="submit">
+                        <i class="fa fa-fw fa-lg fa-check-circle ft-b"></i>
+                        <span id="btnText">Guardar</span>
+                    </button>
+                    <button class="btn btn-danger ft-b text-capitalize ml-2" type="button" data-bs-dismiss="modal">
+                        <i class="fa fa-lg fa-times-circle ft-b"></i>
+                        <span class="text-capitalize">cerrar</span>
+                    </button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 <!-- Modal Views -->

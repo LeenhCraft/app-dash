@@ -99,8 +99,16 @@ class PermisosController extends Controller
 
     public function submenus($request, $response)
     {
+        $data = $this->sanitize($request->getParsedBody());
+        // return $this->respondWithJson($response, $data);
         $model = new PermisosModel;
-        return $this->respondWithJson($response, ['status' => true, 'data' => $model->query("SELECT idsubmenu as id, sub_nombre as nombre FROM sis_submenus")->get()]);
+        return $this->respondWithJson($response, ['status' => true, 'data' => $model->query("SELECT idsubmenu as id, sub_nombre as nombre FROM sis_submenus WHERE idmenu = '{$data["idmenu"]}'")->get()]);
+    }
+
+    public function menus($request, $response)
+    {
+        $model = new PermisosModel;
+        return $this->respondWithJson($response, ['status' => true, 'data' => $model->query("SELECT * FROM sis_menus")->get()]);
     }
 
     public function store($request, $response, $args)

@@ -36,7 +36,8 @@ $(document).ready(function () {
     $.post(ajaxUrl, form, function (data, textStatus, jqXHR) {
       divLoading.css("display", "none");
       if (data.status) {
-        $("#modalpermisos").modal("hide");
+        // $("#modalpermisos").modal("hide");
+        resetForm();
         Swal.fire({
           title: "Exito",
           text: data.message,
@@ -143,16 +144,21 @@ function fntDel(idp) {
 }
 
 function openModal() {
+  resetForm();
   $(".modal-header").removeClass("headerUpdate");
   $(".modal-header").addClass("headerRegister");
   $("#btnActionForm").removeClass("btn-info");
   $("#btnActionForm").addClass("btn-primary");
   $("#btnText").html("Guardar");
   $("#titleModal").html("Nuevo permiso");
-  $("#permisos_form").trigger("reset");
   $("#modalpermisos").modal("show");
+}
+
+function resetForm() {
+  $("#idpermiso").val("");
   lstRoles();
-  lstsubmenus();
+  lstmenus();
+  $("#permisos_form").trigger("reset");
 }
 
 function lstRoles() {
@@ -169,18 +175,21 @@ function lstRoles() {
   });
 }
 
-function lstsubmenus() {
-  let ajaxUrl = base_url + "admin/permisos/submenus";
+function lstmenus() {
+  let ajaxUrl = base_url + "admin/permisos/menus";
   $.post(ajaxUrl, function (data) {
     if (data.status) {
-      $("#idsubmenu").empty();
+      $("#idmenu").empty();
+      $("#idmenu").append(
+        '<option value="0"><span><i class="fa-solid fa-circle-notch"></i>Seleccione</span></option>'
+      );
       $.each(data.data, function (index, value) {
-        $("#idsubmenu").append(
+        $("#idmenu").append(
           "<option value=" +
-            value.id +
+            value.idmenu +
             ">" +
             '<span><i class="fa-solid fa-circle-notch"></i>' +
-            value.nombre +
+            value.men_nombre +
             "</span>" +
             "</option>"
         );
@@ -188,6 +197,8 @@ function lstsubmenus() {
     }
   });
 }
+
+// function lstsubmenus() {}
 
 function fntActv(elem, id, ac) {
   let ele = $(elem).prop("checked");
@@ -213,3 +224,27 @@ function fntActv(elem, id, ac) {
     }
   );
 }
+
+$(document).on("change", "#idmenu", function () {
+  let id = $(this).val();
+  let ajaxUrl = base_url + "admin/permisos/submenus";
+  $.post(ajaxUrl, { idmenu: id }, function (data) {
+    if (data.status) {
+      $("#idsubmenu").empty();
+      $("#idsubmenu").append(
+        '<option value="0"><span><i class="fa-solid fa-circle-notch"></i>Seleccione</span></option>'
+      );
+      $.each(data.data, function (index, value) {
+        $("#idsubmenu").append(
+          "<option value=" +
+            value.id +
+            ">" +
+            '<span><i class="fa-solid fa-circle-notch"></i>' +
+            value.nombre +
+            "</span>" +
+            "</option>"
+        );
+      });
+    }
+  });
+});
