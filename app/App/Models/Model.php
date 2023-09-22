@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use mysqli;
+use Nette\Utils\Callback;
 
 class Model
 {
@@ -99,6 +100,22 @@ class Model
 
     public function where($column, $operator = "=", $value = null)
     {
+        if (is_callable($column)) {
+            if ($this->where) {
+                $tempWhere = $this->where . " AND ("; //guardamos el where actual
+            } else {
+                $tempWhere = " (";
+            }
+            $this->where = "";
+            $column($this);
+            $temp2Where = $this->where;
+
+            $tempWhere .= $temp2Where . ")";
+
+            $this->where = $tempWhere;
+            return $this;
+        }
+
         if ($value == null) {
             $value = $operator;
             $operator = "=";
@@ -117,6 +134,25 @@ class Model
 
     public function orWhere($column, $operator = "=", $value = null)
     {
+        if (is_callable($column)) {
+            $tempWhere = $this->where; //guardamos el where actual
+            $tempWhere .= " OR (";
+            $this->where = "";
+            $column($this);
+            $temp2Where = $this->where;
+
+            $tempWhere .= $temp2Where . ")";
+
+            $this->where = $tempWhere;
+            return $this;
+
+            $currentWhere = $this->where;
+            $this->where .= ($currentWhere ? " OR (" : "(");
+            $column($this);
+            $this->where .= ")";
+            return $this;
+        }
+
         if ($value == null) {
             $value = $operator;
             $operator = "=";
