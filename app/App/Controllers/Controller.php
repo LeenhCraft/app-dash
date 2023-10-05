@@ -41,6 +41,7 @@ class Controller
     {
 
         $payload = $this->view($route, $data);
+        $payload = empty($payload) ? "payload vacio, verificar la ruta" : $payload;
         $response->getBody()->write($payload);
         return $response
             ->withHeader('Content-Type', 'text/html')
@@ -69,14 +70,40 @@ class Controller
 
     public function sanitize($data)
     {
+        if (empty($data)) {
+            return $data;
+        }
+
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 $data[$key] = $this->sanitize($value);
                 continue;
             }
-            $data[$key] = strClean($value);
+
+            // Check if the value is a URL (starts with "http://" or "https://") or if it contains URLs within the text.
+            if (preg_match('/^(http|https):\/\/\S+$/i', $value) || preg_match('/(http|https):\/\/\S+/i', $value)) {
+                $data[$key] = $value; // Keep the original URL(s) without cleaning
+            } else {
+                // Implement a function (e.g., extractAndCleanURLs) to find and clean URLs within the text.
+                $cleanedValue = $this->extractAndCleanURLs($value);
+                $data[$key] = $cleanedValue; // Assign the cleaned value to $data[$key]
+            }
         }
         return $data;
+    }
+
+    private function extractAndCleanURLs($text)
+    {
+        // Use preg_replace_callback to replace URLs in the text with cleaned versions.
+        $cleanedText = preg_replace_callback('/(http|https):\/\/\S+/i', function ($match) {
+            // Implement your cleaning logic here, e.g., using strClean.
+            return strClean($match[0]);
+        }, $text);
+
+        // Clean the rest of the text using strClean.
+        $cleanedText = strClean($cleanedText);
+
+        return $cleanedText;
     }
 
     public function get_method($cadena)
