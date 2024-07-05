@@ -183,9 +183,13 @@ class Model
     public function emptyQuery()
     {
         $this->query = null;
-        $this->sql = null;
+        $this->sql = "";
         $this->data = [];
         $this->params = null;
+        $this->unionAll = "";
+        $this->select = "*";
+        $this->where = "";
+        $this->values = [];
         $this->join = "";
         $this->orderBy = "";
         $this->limit = "";
